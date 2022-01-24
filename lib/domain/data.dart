@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 part 'data.g.dart';
 
-class ReturnedFromPop{
+class ReturnedFromPop {
   BoardGame entity;
   int type;
 
@@ -25,7 +25,8 @@ class BoardGame {
       required this.maxAge,
       required this.publisher});
 
-  factory BoardGame.fromJson(Map<String, dynamic> json) => _$BoardGameFromJson(json);
+  factory BoardGame.fromJson(Map<String, dynamic> json) =>
+      _$BoardGameFromJson(json);
   Map<String, dynamic> toJson() => _$BoardGameToJson(this);
 }
 

@@ -28,7 +28,7 @@ class _MainScreenState extends State<MainScreen> {
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
             var result = await Navigator.pushNamed(context, '/add');
-            if(result != null){
+            if (result != null) {
               setState(() {
                 _list.add(result as BoardGame);
               });
@@ -36,22 +36,28 @@ class _MainScreenState extends State<MainScreen> {
           },
           child: const Icon(Icons.add),
         ),
-        body: (_list.isEmpty) ? _buildBody(context) : _buildListView(context)
-    );
+        body: (_list.isEmpty) ? _buildBody(context) : _buildListView(context));
   }
 
   FutureBuilder<List<BoardGame>> _buildBody(BuildContext context) {
     final client = ApiClient(Dio(BaseOptions(contentType: "application/json")));
     developer.log("Before get all call");
     return FutureBuilder<List<BoardGame>>(
-        future: client.getAll(),
+        future: client.getAll().timeout(const Duration(seconds: 3)),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             developer.log("After get all call");
 
-            final List<BoardGame>? posts = snapshot.data;
-            _list = posts!;
-
+            if (!snapshot.hasError) {
+              final List<BoardGame>? posts = snapshot.data;
+              _list = posts!;
+            } else {
+              _list = [];
+              Future.delayed(const Duration(milliseconds: 500), () {
+                _showRetryDialog(context,
+                    "Server did not respond. Make sure you are connected to the internet.");
+              });
+            }
             return _buildListView(context);
           } else {
             return const Center(
@@ -74,18 +80,17 @@ class _MainScreenState extends State<MainScreen> {
                     MaterialPageRoute(
                         builder: (context) =>
                             ViewScreen(entity: _list[index])));
-                if(result != null){
+                if (result != null) {
                   var returned = result as ReturnedFromPop;
                   var entity = returned.entity;
 
-                  if(returned.type == 0) {
-                    var index = _list.indexWhere((element) =>
-                    element.id == entity.id);
+                  if (returned.type == 0) {
+                    var index =
+                        _list.indexWhere((element) => element.id == entity.id);
                     setState(() {
                       _list.replaceRange(index, index + 1, [entity]);
                     });
-                  }
-                  else{
+                  } else {
                     setState(() {
                       _list.removeWhere((element) => element.id == entity.id);
                     });
@@ -101,18 +106,27 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  _showErrorDialog(BuildContext context, String err) {
+  _showRetryDialog(BuildContext context, String err) {
+    Widget retryButton = TextButton(
+      child: const Text("Retry"),
+      onPressed: () {
+        Navigator.pop(context);
+        setState(() {});
+      },
+    );
+
     Widget cancelButton = TextButton(
-      child: Text("Ok"),
+      child: const Text("Cancel"),
       onPressed: () {
         Navigator.pop(context);
       },
     );
 
     AlertDialog alert = AlertDialog(
-      title: Text("Error"),
+      title: const Text("Error"),
       content: Text(err),
       actions: [
+        retryButton,
         cancelButton,
       ],
     );
