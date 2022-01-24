@@ -38,10 +38,19 @@ dependencies:
   sqflite: any
   path_provider: any
   http: any
+  retrofit: any
+  dio: any
+  built_value: any
+  json_annotation: any
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  retrofit_generator: any
+  build_runner: any
+  json_serializable: any
+  built_value_generator: any
+  pedantic: any
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

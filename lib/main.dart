@@ -10,9 +10,7 @@ void main() {
   runApp(MaterialApp(
     routes: {
       '/': (context) => MainScreen(),
-      '/add': (context) => AddScreen(),
-      '/view': (context) => ViewScreen(),
-      '/edit': (context) => EditScreen()
+      '/add': (context) => AddScreen()
     },
   ));
 }
