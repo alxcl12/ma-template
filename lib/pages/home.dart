@@ -26,27 +26,32 @@ class _MainScreenState extends State<MainScreen> {
           centerTitle: true,
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/add').then((value) {
+          onPressed: () async {
+            var result = await Navigator.pushNamed(context, '/add');
+            if(result != null){
               setState(() {
-                //_getList();
+                _list.add(result as BoardGame);
               });
-            });
+            }
           },
           child: const Icon(Icons.add),
         ),
-        body: _buildBody(context));
+        body: (_list.isEmpty) ? _buildBody(context) : _buildListView(context)
+    );
   }
 
   FutureBuilder<List<BoardGame>> _buildBody(BuildContext context) {
     final client = ApiClient(Dio(BaseOptions(contentType: "application/json")));
+    developer.log("Before get all call");
     return FutureBuilder<List<BoardGame>>(
         future: client.getAll(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
+            developer.log("After get all call");
+
             final List<BoardGame>? posts = snapshot.data;
-            log(snapshot.error.toString());
             _list = posts!;
+
             return _buildListView(context);
           } else {
             return const Center(
@@ -63,12 +68,29 @@ class _MainScreenState extends State<MainScreen> {
           padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 3.0),
           child: Card(
             child: ListTile(
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                var result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
                             ViewScreen(entity: _list[index])));
+                if(result != null){
+                  var returned = result as ReturnedFromPop;
+                  var entity = returned.entity;
+
+                  if(returned.type == 0) {
+                    var index = _list.indexWhere((element) =>
+                    element.id == entity.id);
+                    setState(() {
+                      _list.replaceRange(index, index + 1, [entity]);
+                    });
+                  }
+                  else{
+                    setState(() {
+                      _list.removeWhere((element) => element.id == entity.id);
+                    });
+                  }
+                }
               },
               title: Text(_list[index].name),
             ),

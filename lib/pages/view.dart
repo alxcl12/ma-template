@@ -97,12 +97,19 @@ class _ViewScreenState extends State<ViewScreen> {
     Widget continueButton = TextButton(
       child: Text("Continue"),
       onPressed: () {
-        final client = ApiClient(Dio(BaseOptions(contentType: "application/json")));
+        final client =
+            ApiClient(Dio(BaseOptions(contentType: "application/json")));
+
+        developer.log("Before delete call, id: $id");
         client.delete(id);
-          Fluttertoast.showToast(
-              msg: "Deleted board game", toastLength: Toast.LENGTH_SHORT);
-          Navigator.pop(context);
-          Navigator.pop(context);
+        developer.log("After delete call, id: $id");
+
+        var returned = ReturnedFromPop(widget.entity, 1);
+
+        Fluttertoast.showToast(
+            msg: "Deleted board game", toastLength: Toast.LENGTH_SHORT);
+        Navigator.pop(context);
+        Navigator.pop(context, returned);
       },
     );
 

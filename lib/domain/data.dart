@@ -1,6 +1,13 @@
 import 'package:json_annotation/json_annotation.dart';
 part 'data.g.dart';
 
+class ReturnedFromPop{
+  BoardGame entity;
+  int type;
+
+  ReturnedFromPop(this.entity, this.type);
+}
+
 @JsonSerializable()
 class BoardGame {
   int? id;

@@ -106,35 +106,17 @@ class _EditScreenState extends State<EditScreen> {
         minAge: int.parse(minAgeController.text),
         maxAge: int.parse(maxAgeController.text),
         publisher: publisherController.text);
-    client.update(entity, widget.entity.id!);
+
+    developer.log("Before edit call, id: ${widget.entity.id!}");
+    var result = client.update(entity, widget.entity.id!);
+    developer.log("After edit call, id: ${widget.entity.id!}");
+
+    var returned = ReturnedFromPop(await result, 0);
+
     Fluttertoast.showToast(
         msg: "Edited entity.", toastLength: Toast.LENGTH_SHORT);
     Navigator.pop(context);
-    Navigator.pop(context);
-
-    // developer.log("Before patch call");
-    // final http.Response response = await http.patch(
-    //   Uri.parse('http://10.0.2.2:5000/bg/${widget.entity.id}'),
-    //   headers: <String, String>{
-    //     'Content-Type': 'application/json; charset=UTF-8',
-    //   },
-    //   body: jsonEncode(<String, String>{
-    //     'name': nameController.text,
-    //     'price': priceController.text,
-    //     'minAge': minAgeController.text,
-    //     'maxAge': maxAgeController.text,
-    //     'publisher': publisherController.text
-    //   }),
-    // );
-    // developer.log("After patch call, response: ${response.statusCode}");
-    // if (response.statusCode == 200) {
-    //   Fluttertoast.showToast(
-    //       msg: "Edited entity.", toastLength: Toast.LENGTH_SHORT);
-    //   Navigator.pop(context);
-    //   Navigator.pop(context);
-    // } else {
-    //   _showErrorDialog(context, response.statusCode.toString());
-    // }
+    Navigator.pop(context, returned);
   }
 
   _showErrorDialog(BuildContext context, String err) {

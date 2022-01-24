@@ -92,8 +92,6 @@ class _AddScreenState extends State<AddScreen> {
   }
 
   _onClickSave(BuildContext context) async {
-    developer.log(
-        "Before add bg call, name: ${nameController.text}, price: ${priceController.text}");
     final client = ApiClient(Dio(BaseOptions(contentType: "application/json")));
     final BoardGame entity = BoardGame(
         id: null,
@@ -102,44 +100,14 @@ class _AddScreenState extends State<AddScreen> {
         minAge: int.parse(minAgeController.text),
         maxAge: int.parse(maxAgeController.text),
         publisher: publisherController.text);
-    client.add(entity);
-    // final http.Response response = await http.post(
-    //   Uri.parse('http://10.0.2.2:5000/bg'),
-    //   headers: <String, String>{
-    //     'Content-Type': 'application/json; charset=UTF-8',
-    //   },
-    //   body: jsonEncode(<String, String>{
-    //     'name': nameController.text,
-    //     'price': priceController.text,
-    //     'minAge': minAgeController.text,
-    //     'maxAge': maxAgeController.text,
-    //     'publisher': publisherController.text
-    //   }),
-    // );
-    //
-    // developer.log("After add bg call, response: ${response.statusCode}");
-    //
-    // if (response.statusCode == 200) {
-    //   Fluttertoast.showToast(
-    //       msg: "Added board game", toastLength: Toast.LENGTH_SHORT);
-    //   Navigator.pop(context);
-    // } else {
-    //   _showErrorDialog(context, response.statusCode.toString());
-    //   // BoardGame bg = BoardGame.withoutId(
-    //   //     nameController.text,
-    //   //     int.parse(priceController.text),
-    //   //     int.parse(minAgeController.text),
-    //   //     int.parse(maxAgeController.text),
-    //   //     publisherController.text);
-    //
-    //   try {
-    //     //await DatabaseHelper.instance.addBoardGame(bg);
-    //   } on Exception catch (e) {
-    //     _showErrorDialog(context, e.toString());
-    //   }
+
+    developer.log("Before add call");
+    var result = client.add(entity);
+    developer.log("After add call");
+
     Fluttertoast.showToast(
-        msg: "Added board game locally!!", toastLength: Toast.LENGTH_SHORT);
-    Navigator.pop(context);
+        msg: "Added entity", toastLength: Toast.LENGTH_SHORT);
+    Navigator.pop(context, result);
   }
 }
 
