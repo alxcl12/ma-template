@@ -95,7 +95,13 @@ class _AddScreenState extends State<AddScreen> {
     developer.log(
         "Before add bg call, name: ${nameController.text}, price: ${priceController.text}");
     final client = ApiClient(Dio(BaseOptions(contentType: "application/json")));
-    final BoardGame entity = BoardGame(id: null, name: nameController.text, price: int.parse(priceController.text), minAge: int.parse(minAgeController.text), maxAge: int.parse(maxAgeController.text), publisher: publisherController.text);
+    final BoardGame entity = BoardGame(
+        id: null,
+        name: nameController.text,
+        price: int.parse(priceController.text),
+        minAge: int.parse(minAgeController.text),
+        maxAge: int.parse(maxAgeController.text),
+        publisher: publisherController.text);
     client.add(entity);
     // final http.Response response = await http.post(
     //   Uri.parse('http://10.0.2.2:5000/bg'),
@@ -131,32 +137,32 @@ class _AddScreenState extends State<AddScreen> {
     //   } on Exception catch (e) {
     //     _showErrorDialog(context, e.toString());
     //   }
-      Fluttertoast.showToast(
-          msg: "Added board game locally!!", toastLength: Toast.LENGTH_SHORT);
+    Fluttertoast.showToast(
+        msg: "Added board game locally!!", toastLength: Toast.LENGTH_SHORT);
+    Navigator.pop(context);
+  }
+}
+
+_showErrorDialog(BuildContext context, String err) {
+  Widget cancelButton = TextButton(
+    child: Text("Ok"),
+    onPressed: () {
       Navigator.pop(context);
-    }
-  }
+    },
+  );
 
-  _showErrorDialog(BuildContext context, String err) {
-    Widget cancelButton = TextButton(
-      child: Text("Ok"),
-      onPressed: () {
-        Navigator.pop(context);
-      },
-    );
+  AlertDialog alert = AlertDialog(
+    title: Text("Error"),
+    content: Text(err),
+    actions: [
+      cancelButton,
+    ],
+  );
 
-    AlertDialog alert = AlertDialog(
-      title: Text("Error"),
-      content: Text(err),
-      actions: [
-        cancelButton,
-      ],
-    );
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}

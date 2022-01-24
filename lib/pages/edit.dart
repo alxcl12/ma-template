@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:non_native/domain/data.dart';
 import 'package:http/http.dart' as http;
+import 'package:non_native/rest/api_client.dart';
 
 class EditScreen extends StatefulWidget {
   final BoardGame entity;
@@ -31,7 +33,7 @@ class _EditScreenState extends State<EditScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit board game"),
+        title: const Text("Edit"),
         centerTitle: true,
       ),
       body: Padding(
@@ -86,7 +88,7 @@ class _EditScreenState extends State<EditScreen> {
                     onPressed: () {
                       _onClickEdit();
                     },
-                    child: const Text("Edit Board Game"))
+                    child: const Text("Edit"))
               ]),
             ),
           ],
@@ -96,29 +98,43 @@ class _EditScreenState extends State<EditScreen> {
   }
 
   _onClickEdit() async {
-    developer.log("Before patch call");
-    final http.Response response = await http.patch(
-      Uri.parse('http://10.0.2.2:5000/bg/${widget.entity.id}'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'name': nameController.text,
-        'price': priceController.text,
-        'minAge': minAgeController.text,
-        'maxAge': maxAgeController.text,
-        'publisher': publisherController.text
-      }),
-    );
-    developer.log("After patch call, response: ${response.statusCode}");
-    if (response.statusCode == 200) {
-      Fluttertoast.showToast(
-          msg: "Edited board game", toastLength: Toast.LENGTH_SHORT);
-      Navigator.pop(context);
-      Navigator.pop(context);
-    } else {
-      _showErrorDialog(context, response.statusCode.toString());
-    }
+    final client = ApiClient(Dio(BaseOptions(contentType: "application/json")));
+    final BoardGame entity = BoardGame(
+        id: widget.entity.id,
+        name: nameController.text,
+        price: int.parse(priceController.text),
+        minAge: int.parse(minAgeController.text),
+        maxAge: int.parse(maxAgeController.text),
+        publisher: publisherController.text);
+    client.update(entity, widget.entity.id!);
+    Fluttertoast.showToast(
+        msg: "Edited entity.", toastLength: Toast.LENGTH_SHORT);
+    Navigator.pop(context);
+    Navigator.pop(context);
+
+    // developer.log("Before patch call");
+    // final http.Response response = await http.patch(
+    //   Uri.parse('http://10.0.2.2:5000/bg/${widget.entity.id}'),
+    //   headers: <String, String>{
+    //     'Content-Type': 'application/json; charset=UTF-8',
+    //   },
+    //   body: jsonEncode(<String, String>{
+    //     'name': nameController.text,
+    //     'price': priceController.text,
+    //     'minAge': minAgeController.text,
+    //     'maxAge': maxAgeController.text,
+    //     'publisher': publisherController.text
+    //   }),
+    // );
+    // developer.log("After patch call, response: ${response.statusCode}");
+    // if (response.statusCode == 200) {
+    //   Fluttertoast.showToast(
+    //       msg: "Edited entity.", toastLength: Toast.LENGTH_SHORT);
+    //   Navigator.pop(context);
+    //   Navigator.pop(context);
+    // } else {
+    //   _showErrorDialog(context, response.statusCode.toString());
+    // }
   }
 
   _showErrorDialog(BuildContext context, String err) {

@@ -20,4 +20,7 @@ abstract class ApiClient {
 
   @POST("/bg")
   Future<BoardGame> add(@Body() BoardGame entity);
+
+  @PATCH("/bg/{id}")
+  Future<BoardGame> update(@Body() BoardGame entity, @Path("id") int id);
 }
