@@ -9,10 +9,10 @@ import 'pages/add.dart';
 void main() {
   runApp(MaterialApp(
     routes: {
-      '/': (context) => BoardGamesScreen(),
-      '/add': (context) => AddBoardGameScreen(),
-      '/boardGame': (context) => BoardGameView(),
-      '/editBoardGame': (context) => BoardGameEditScreen()
+      '/': (context) => MainScreen(),
+      '/add': (context) => AddScreen(),
+      '/view': (context) => ViewScreen(),
+      '/edit': (context) => EditScreen()
     },
   ));
 }

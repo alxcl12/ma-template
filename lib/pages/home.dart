@@ -1,18 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:non_native/domain/boardgame.dart';
-import '../database_helper.dart';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 
-class BoardGamesScreen extends StatefulWidget {
-  const BoardGamesScreen({Key? key}) : super(key: key);
+class MainScreen extends StatefulWidget {
+  const MainScreen({Key? key}) : super(key: key);
 
   @override
-  _BoardGamesScreenState createState() => _BoardGamesScreenState();
+  _MainScreenState createState() => _MainScreenState();
 }
 
-class _BoardGamesScreenState extends State<BoardGamesScreen> {
+class _MainScreenState extends State<MainScreen> {
   List<BoardGame> _list = [];
 
   @override
@@ -24,48 +23,48 @@ class _BoardGamesScreenState extends State<BoardGamesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Board Games"),
-        centerTitle: true,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/add').then((value) {
-            setState(() {
-              _getList();
-            });
-          });
-        },
-        child: Icon(Icons.add),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 45.0, horizontal: 40.0),
-        child: ListView.builder(
-          itemCount: _list.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 3.0),
-              child:Card(
-                child: ListTile(
-                  onTap: () {
-                    Navigator.pushNamed(
-                        context,
-                        '/boardGame',
-                        arguments:_list[index].id,
-                    ).then((value) {
-                      setState(() {
-                        _getList();
-                      });
-                    });
-                  },
-                  title: Text(_list[index].name),
-                ),
-              ),
-            );
-          },
+        appBar: AppBar(
+          title: const Text("Board Games"),
+          centerTitle: true,
         ),
-      )
-    );
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(context, '/add').then((value) {
+              setState(() {
+                _getList();
+              });
+            });
+          },
+          child: Icon(Icons.add),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 45.0, horizontal: 40.0),
+          child: ListView.builder(
+            itemCount: _list.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 5.0, horizontal: 3.0),
+                child: Card(
+                  child: ListTile(
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/view',
+                        arguments: _list[index].id,
+                      ).then((value) {
+                        setState(() {
+                          _getList();
+                        });
+                      });
+                    },
+                    title: Text(_list[index].name),
+                  ),
+                ),
+              );
+            },
+          ),
+        ));
   }
 
   List<BoardGame> _decodeBg(String responseBody) {
@@ -84,27 +83,21 @@ class _BoardGamesScreenState extends State<BoardGamesScreen> {
     );
     developer.log("After get all bg call, response ${response.statusCode}");
 
-    if (response.statusCode == 200){
+    if (response.statusCode == 200) {
       list = _decodeBg(response.body);
-    }
-    else {
+    } else {
       _showErrorDialog(context, response.statusCode.toString());
     }
-
-    // try {
-    //   list = await DatabaseHelper.instance.getAllBoardGame();
-    // }on Exception catch(e){
-    //   _showErrorDialog(context, e.toString());
-    // }
 
     setState(() {
       _list = list;
     });
   }
-  _showErrorDialog(BuildContext context, String err){
+
+  _showErrorDialog(BuildContext context, String err) {
     Widget cancelButton = TextButton(
       child: Text("Ok"),
-      onPressed:  () {
+      onPressed: () {
         Navigator.pop(context);
       },
     );

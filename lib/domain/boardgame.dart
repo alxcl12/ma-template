@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-
-class BoardGame{
+class BoardGame {
   static const tableBoardGames = 'boardGames';
   static const colId = 'id';
   static const colName = 'name';
@@ -16,13 +14,15 @@ class BoardGame{
   late int maxAge;
   late String publisher;
 
-  BoardGame(this.id, this.name, this.price, this.minAge, this.maxAge, this.publisher);
+  BoardGame(
+      this.id, this.name, this.price, this.minAge, this.maxAge, this.publisher);
 
-  BoardGame.withoutId(this.name, this.price, this.minAge, this.maxAge, this.publisher){
+  BoardGame.withoutId(
+      this.name, this.price, this.minAge, this.maxAge, this.publisher) {
     id = null;
   }
 
-  BoardGame.fromMap(Map<String, dynamic> map){
+  BoardGame.fromMap(Map<String, dynamic> map) {
     id = map[colId];
     name = map[colName];
     price = map[colPrice];
@@ -31,7 +31,7 @@ class BoardGame{
     publisher = map[colPublisher];
   }
 
-  Map<String, dynamic> toMap(){
+  Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
       'name': this.name,
       'price': this.price,
@@ -40,13 +40,14 @@ class BoardGame{
       'publisher': this.publisher
     };
 
-    if(id != null){
+    if (id != null) {
       map[colId] = id;
     }
     return map;
   }
 
   factory BoardGame.fromJson(Map<String, dynamic> json) {
-    return BoardGame(json['id'], json['name'], json['price'], json['minAge'], json['maxAge'], json['publisher']);
+    return BoardGame(json['id'], json['name'], json['price'], json['minAge'],
+        json['maxAge'], json['publisher']);
   }
 }
