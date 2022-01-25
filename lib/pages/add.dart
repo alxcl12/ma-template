@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
@@ -101,13 +102,49 @@ class _AddScreenState extends State<AddScreen> {
         maxAge: int.parse(maxAgeController.text),
         publisher: publisherController.text);
 
+    bool local = false;
     developer.log("Before add call");
-    var result = client.add(entity);
+    var result = await client
+        .add(entity)
+        .timeout(const Duration(milliseconds: 1000))
+        .catchError((Object obj) async {
+      switch (obj.runtimeType) {
+        case DioError:
+          final res = (obj as DioError).response;
+          developer
+              .log("Got error : ${res!.statusCode} -> ${res.statusMessage}");
+          _showErrorDialog(context, "Error adding entity.");
+          break;
+        case TimeoutException:
+          Fluttertoast.showToast(
+              msg: "Server did not respond, going local.",
+              toastLength: Toast.LENGTH_SHORT);
+
+          var responseDb = await DatabaseHelper.instance.add(entity);
+          if (responseDb == 1) {
+            local = true;
+          } else {
+            _showErrorDialog(context, "Error adding entity in local DB.");
+          }
+
+          break;
+        default:
+          break;
+      }
+      return Future<BoardGame>.value(entity);
+    });
     developer.log("After add call");
+
+    ReturnedFromPop returned;
+    if (local) {
+      returned = ReturnedFromPop(entity, 0, true);
+    } else {
+      returned = ReturnedFromPop(result, 0, false);
+    }
 
     Fluttertoast.showToast(
         msg: "Added entity", toastLength: Toast.LENGTH_SHORT);
-    Navigator.pop(context, result);
+    Navigator.pop(context, returned);
   }
 }
 

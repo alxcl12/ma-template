@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:non_native/database_helper.dart';
 import 'package:non_native/domain/data.dart';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
@@ -59,9 +60,14 @@ class _MainScreenState extends State<MainScreen> {
           onPressed: () async {
             var result = await Navigator.pushNamed(context, '/add');
             if (result != null) {
+              result as ReturnedFromPop;
               setState(() {
-                _list.add(result as BoardGame);
+                _list.add(result.entity);
               });
+              if(!result.local){
+                //TODO
+                DatabaseHelper.instance.add(result.entity);
+              }
             }
           },
           child: const Icon(Icons.add),
@@ -81,6 +87,11 @@ class _MainScreenState extends State<MainScreen> {
             if (!snapshot.hasError) {
               final List<BoardGame>? posts = snapshot.data;
               _list = posts!;
+              DatabaseHelper.instance.deleteDatabase();
+              for(var item in _list){
+                //TODO
+                DatabaseHelper.instance.add(item);
+              }
             } else {
               _list = [];
               Future.delayed(const Duration(milliseconds: 500), () {
@@ -122,11 +133,21 @@ class _MainScreenState extends State<MainScreen> {
                         setState(() {
                           _list.replaceRange(index, index + 1, [entity]);
                         });
+
+                        if(!returned.local){
+                          //TODO
+                          DatabaseHelper.instance.update(entity);
+                        }
                       } else {
                         setState(() {
                           _list.removeWhere(
                               (element) => element.id == entity.id);
                         });
+
+                        if(!returned.local){
+                          //TODO
+                          DatabaseHelper.instance.delete(entity.id!);
+                        }
                       }
                     }
                   },
@@ -180,5 +201,6 @@ class _MainScreenState extends State<MainScreen> {
   void dispose() {
     super.dispose();
     _channel.sink.close();
+    DatabaseHelper.instance.deleteDatabase();
   }
 }

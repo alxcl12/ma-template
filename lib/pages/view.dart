@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import 'package:non_native/rest/api_client.dart';
 
+import '../database_helper.dart';
 import 'edit.dart';
 
 class ViewScreen extends StatefulWidget {
@@ -89,22 +91,57 @@ class _ViewScreenState extends State<ViewScreen> {
 
   _showDeleteDialog(BuildContext context, int id) {
     Widget cancelButton = TextButton(
-      child: Text("Cancel"),
+      child: const Text("Cancel"),
       onPressed: () {
         Navigator.pop(context);
       },
     );
     Widget continueButton = TextButton(
-      child: Text("Continue"),
-      onPressed: () {
+      child: const Text("Continue"),
+      onPressed: () async {
         final client =
             ApiClient(Dio(BaseOptions(contentType: "application/json")));
 
+        bool local = false;
         developer.log("Before delete call, id: $id");
-        client.delete(id);
+        var result = await client
+            .delete(id)
+            .timeout(const Duration(milliseconds: 1000))
+            .catchError((Object obj) async {
+          switch (obj.runtimeType) {
+            case DioError:
+              final res = (obj as DioError).response;
+              developer.log(
+                  "Got error : ${res!.statusCode} -> ${res.statusMessage}");
+              _showErrorDialog(context, "Error deleting entity.");
+              break;
+            case TimeoutException:
+              Fluttertoast.showToast(
+                  msg: "Server did not respond, going local.",
+                  toastLength: Toast.LENGTH_SHORT);
+
+              var responseDb = await DatabaseHelper.instance.delete(id);
+              if (responseDb == 1) {
+                local = true;
+              } else {
+                _showErrorDialog(context, "Error editing entity in local DB.");
+              }
+
+              break;
+            default:
+              break;
+          }
+          return Future<void>.value();
+        });
+
         developer.log("After delete call, id: $id");
 
-        var returned = ReturnedFromPop(widget.entity, 1);
+        ReturnedFromPop returned;
+        if (local) {
+          returned = ReturnedFromPop(widget.entity, 0, true);
+        } else {
+          returned = ReturnedFromPop(widget.entity, 0, false);
+        }
 
         Fluttertoast.showToast(
             msg: "Deleted board game", toastLength: Toast.LENGTH_SHORT);
@@ -114,8 +151,8 @@ class _ViewScreenState extends State<ViewScreen> {
     );
 
     AlertDialog alert = AlertDialog(
-      title: Text("Confirmation"),
-      content: Text("Delete board game?"),
+      title: const Text("Confirmation"),
+      content: const Text("Delete board game?"),
       actions: [
         cancelButton,
         continueButton,

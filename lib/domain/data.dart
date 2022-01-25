@@ -4,18 +4,27 @@ part 'data.g.dart';
 class ReturnedFromPop {
   BoardGame entity;
   int type;
+  bool local;
 
-  ReturnedFromPop(this.entity, this.type);
+  ReturnedFromPop(this.entity, this.type, this.local);
 }
 
 @JsonSerializable()
 class BoardGame {
-  int? id;
-  String name;
-  int price;
-  int minAge;
-  int maxAge;
-  String publisher;
+  late int? id;
+  late String name;
+  late int price;
+  late int minAge;
+  late int maxAge;
+  late String publisher;
+
+  static const tableBoardGames = 'boardGames';
+  static const colId = 'id';
+  static const colName = 'name';
+  static const colPrice = 'price';
+  static const colMinAge = 'minAge';
+  static const colMaxAge = 'maxAge';
+  static const colPublisher = 'publisher';
 
   BoardGame(
       {required this.id,
@@ -27,7 +36,32 @@ class BoardGame {
 
   factory BoardGame.fromJson(Map<String, dynamic> json) =>
       _$BoardGameFromJson(json);
+
   Map<String, dynamic> toJson() => _$BoardGameToJson(this);
+
+  BoardGame.fromMap(Map<String, dynamic> map) {
+    id = map[colId];
+    name = map[colName];
+    price = map[colPrice];
+    minAge = map[colMinAge];
+    maxAge = map[colMaxAge];
+    publisher = map[colPublisher];
+  }
+
+  Map<String, dynamic> toMap() {
+    var map = <String, dynamic>{
+      'name': name,
+      'price': price,
+      'minAge': minAge,
+      'maxAge': maxAge,
+      'publisher': publisher
+    };
+
+    if (id != null) {
+      map[colId] = id;
+    }
+    return map;
+  }
 }
 
 @JsonSerializable()

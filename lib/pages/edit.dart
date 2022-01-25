@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:non_native/database_helper.dart';
 import 'package:non_native/domain/data.dart';
 import 'package:http/http.dart' as http;
 import 'package:non_native/rest/api_client.dart';
@@ -106,12 +109,46 @@ class _EditScreenState extends State<EditScreen> {
         minAge: int.parse(minAgeController.text),
         maxAge: int.parse(maxAgeController.text),
         publisher: publisherController.text);
-
+    bool local = false;
     developer.log("Before edit call, id: ${widget.entity.id!}");
-    var result = client.update(entity, widget.entity.id!);
+    var result = await client
+        .update(entity, widget.entity.id!)
+        .timeout(const Duration(milliseconds: 1000))
+        .catchError((Object obj) async {
+          switch (obj.runtimeType) {
+            case DioError:
+              final res = (obj as DioError).response;
+              developer
+                  .log("Got error : ${res!.statusCode} -> ${res.statusMessage}");
+              _showErrorDialog(context, "Error editing entity.");
+              break;
+            case TimeoutException:
+              Fluttertoast.showToast(
+                  msg: "Server did not respond, going local.",
+                  toastLength: Toast.LENGTH_SHORT);
+
+              var responseDb = await DatabaseHelper.instance.update(entity);
+              if (responseDb == 1) {
+                local = true;
+              } else {
+                _showErrorDialog(context, "Error editing entity in local DB.");
+              }
+
+              break;
+            default:
+              break;
+          }
+          return Future<BoardGame>.value(entity);
+    });
+
     developer.log("After edit call, id: ${widget.entity.id!}");
 
-    var returned = ReturnedFromPop(await result, 0);
+    ReturnedFromPop returned;
+    if (local) {
+      returned = ReturnedFromPop(entity, 0, true);
+    } else {
+      returned = ReturnedFromPop(result, 0, false);
+    }
 
     Fluttertoast.showToast(
         msg: "Edited entity.", toastLength: Toast.LENGTH_SHORT);
