@@ -42,6 +42,7 @@ dependencies:
   dio: any
   built_value: any
   json_annotation: any
+  web_socket_channel: any
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +52,7 @@ dev_dependencies:
   json_serializable: any
   built_value_generator: any
   pedantic: any
+  web_socket_channel: any
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

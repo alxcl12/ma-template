@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:non_native/domain/data.dart';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import 'package:non_native/pages/view.dart';
 import 'package:non_native/rest/api_client.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -17,6 +19,33 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   List<BoardGame> _list = [];
+  final _channel = WebSocketChannel.connect(
+    Uri.parse("ws://10.0.2.2:3000"),
+  );
+
+  @override
+  void initState(){
+    super.initState();
+    _channel.stream.listen((event) {
+      var entity = event as BoardGame;
+      log("New entity received from ws, id: ${entity.id}");
+
+      bool insert = true;
+      for(var item in _list){
+        if(item.id == entity.id){
+          insert = false;
+          break;
+        }
+      }
+      if(insert) {
+        setState(() {
+          _list.add(entity);
+        });
+        Fluttertoast.showToast(
+            msg: "New entity came from the server.", toastLength: Toast.LENGTH_SHORT);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,5 +166,11 @@ class _MainScreenState extends State<MainScreen> {
         return alert;
       },
     );
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+    _channel.sink.close();
   }
 }
