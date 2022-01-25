@@ -24,25 +24,26 @@ class _MainScreenState extends State<MainScreen> {
   );
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _channel.stream.listen((event) {
       var entity = event as BoardGame;
       log("New entity received from ws, id: ${entity.id}");
 
       bool insert = true;
-      for(var item in _list){
-        if(item.id == entity.id){
+      for (var item in _list) {
+        if (item.id == entity.id) {
           insert = false;
           break;
         }
       }
-      if(insert) {
+      if (insert) {
         setState(() {
           _list.add(entity);
         });
         Fluttertoast.showToast(
-            msg: "New entity came from the server.", toastLength: Toast.LENGTH_SHORT);
+            msg: "New entity came from the server.",
+            toastLength: Toast.LENGTH_SHORT);
       }
     });
   }
@@ -102,31 +103,38 @@ class _MainScreenState extends State<MainScreen> {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 3.0),
           child: Card(
-            child: ListTile(
-              onTap: () async {
-                var result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            ViewScreen(entity: _list[index])));
-                if (result != null) {
-                  var returned = result as ReturnedFromPop;
-                  var entity = returned.entity;
+            child: Column(
+              children: [
+                ListTile(
+                  onTap: () async {
+                    var result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ViewScreen(entity: _list[index])));
+                    if (result != null) {
+                      var returned = result as ReturnedFromPop;
+                      var entity = returned.entity;
 
-                  if (returned.type == 0) {
-                    var index =
-                        _list.indexWhere((element) => element.id == entity.id);
-                    setState(() {
-                      _list.replaceRange(index, index + 1, [entity]);
-                    });
-                  } else {
-                    setState(() {
-                      _list.removeWhere((element) => element.id == entity.id);
-                    });
-                  }
-                }
-              },
-              title: Text(_list[index].name),
+                      if (returned.type == 0) {
+                        var index = _list
+                            .indexWhere((element) => element.id == entity.id);
+                        setState(() {
+                          _list.replaceRange(index, index + 1, [entity]);
+                        });
+                      } else {
+                        setState(() {
+                          _list.removeWhere(
+                              (element) => element.id == entity.id);
+                        });
+                      }
+                    }
+                  },
+                  title: Text(_list[index].name),
+                  subtitle: Text("Price: " + _list[index].price.toString()),
+                ),
+                Text(_list[index].publisher, textAlign: TextAlign.left),
+              ],
             ),
           ),
         );
@@ -169,7 +177,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     super.dispose();
     _channel.sink.close();
   }
