@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:non_native/database_helper.dart';
 import 'package:non_native/domain/data.dart';
-import 'package:http/http.dart' as http;
 import 'package:non_native/rest/api_client.dart';
 
 class AddScreen extends StatefulWidget {
@@ -22,6 +20,7 @@ class _AddScreenState extends State<AddScreen> {
   final minAgeController = TextEditingController();
   final maxAgeController = TextEditingController();
   final publisherController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,66 +29,69 @@ class _AddScreenState extends State<AddScreen> {
           title: const Text("Add board game"),
           centerTitle: true,
         ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 40.0),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 50.0, horizontal: 10.0),
+        body: (_isLoading)
+            ? const Center(child: CircularProgressIndicator())
+            : Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 0.0, horizontal: 40.0),
                 child: Column(
                   children: [
-                    TextField(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Name",
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 50.0, horizontal: 10.0),
+                      child: Column(
+                        children: [
+                          TextField(
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Name",
+                            ),
+                            controller: nameController,
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Price",
+                            ),
+                            controller: priceController,
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Min Age",
+                            ),
+                            controller: minAgeController,
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Max Age",
+                            ),
+                            controller: maxAgeController,
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Publisher",
+                            ),
+                            controller: publisherController,
+                          ),
+                          const SizedBox(height: 48),
+                          ElevatedButton(
+                              onPressed: () {
+                                _onClickSave(context);
+                              },
+                              child: const Text("Add Board Game")),
+                        ],
                       ),
-                      controller: nameController,
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Price",
-                      ),
-                      controller: priceController,
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Min Age",
-                      ),
-                      controller: minAgeController,
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Max Age",
-                      ),
-                      controller: maxAgeController,
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Publisher",
-                      ),
-                      controller: publisherController,
-                    ),
-                    const SizedBox(height: 48),
-                    ElevatedButton(
-                        onPressed: () {
-                          _onClickSave(context);
-                        },
-                        child: const Text("Add Board Game")),
+                    )
                   ],
                 ),
-              )
-            ],
-          ),
-        ));
+              ));
   }
 
   _onClickSave(BuildContext context) async {
@@ -104,6 +106,13 @@ class _AddScreenState extends State<AddScreen> {
 
     bool local = false;
     developer.log("Before add call");
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    //await Future.delayed(const Duration(milliseconds: 3500), () { });
+
     var result = await client
         .add(entity)
         .timeout(const Duration(milliseconds: 1000))
@@ -135,6 +144,8 @@ class _AddScreenState extends State<AddScreen> {
     });
     developer.log("After add call");
 
+    _isLoading = false;
+
     ReturnedFromPop returned;
     if (local) {
       returned = ReturnedFromPop(entity, 0, true);
@@ -150,14 +161,14 @@ class _AddScreenState extends State<AddScreen> {
 
 _showErrorDialog(BuildContext context, String err) {
   Widget cancelButton = TextButton(
-    child: Text("Ok"),
+    child: const Text("Ok"),
     onPressed: () {
       Navigator.pop(context);
     },
   );
 
   AlertDialog alert = AlertDialog(
-    title: Text("Error"),
+    title: const Text("Error"),
     content: Text(err),
     actions: [
       cancelButton,

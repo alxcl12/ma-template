@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:non_native/domain/data.dart';
 import 'dart:developer' as developer;
-import 'package:http/http.dart' as http;
 import 'package:non_native/rest/api_client.dart';
 
 import '../database_helper.dart';
@@ -20,6 +18,8 @@ class ViewScreen extends StatefulWidget {
 }
 
 class _ViewScreenState extends State<ViewScreen> {
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     BoardGame boardGame = widget.entity;
@@ -28,64 +28,67 @@ class _ViewScreenState extends State<ViewScreen> {
         title: const Text("Board game"),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 64.0, horizontal: 40.0),
-        child: Column(
-          children: [
-            Text(
-              "Name:  ${boardGame.name}",
-              textAlign: TextAlign.left,
-              style: const TextStyle(fontSize: 20),
+      body: (_isLoading)
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 64.0, horizontal: 40.0),
+              child: Column(
+                children: [
+                  Text(
+                    "Name:  ${boardGame.name}",
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Price:  ${boardGame.price}",
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Min Age:  ${boardGame.minAge}",
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Max Age:  ${boardGame.maxAge}",
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Publisher:  ${boardGame.publisher}",
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 48),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            _showDeleteDialog(context, boardGame.id!);
+                          },
+                          child: const Text("Delete")),
+                      const SizedBox(width: 32),
+                      ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        EditScreen(entity: widget.entity)));
+                          },
+                          child: const Text("Edit"))
+                    ],
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                  )
+                ],
+              ),
             ),
-            const SizedBox(height: 10),
-            Text(
-              "Price:  ${boardGame.price}",
-              textAlign: TextAlign.left,
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "Min Age:  ${boardGame.minAge}",
-              textAlign: TextAlign.left,
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "Max Age:  ${boardGame.maxAge}",
-              textAlign: TextAlign.left,
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "Publisher:  ${boardGame.publisher}",
-              textAlign: TextAlign.left,
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 48),
-            Row(
-              children: [
-                ElevatedButton(
-                    onPressed: () {
-                      _showDeleteDialog(context, boardGame.id!);
-                    },
-                    child: const Text("Delete")),
-                const SizedBox(width: 32),
-                ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  EditScreen(entity: widget.entity)));
-                    },
-                    child: const Text("Edit"))
-              ],
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-            )
-          ],
-        ),
-      ),
     );
   }
 
@@ -104,6 +107,10 @@ class _ViewScreenState extends State<ViewScreen> {
 
         bool local = false;
         developer.log("Before delete call, id: $id");
+
+        setState(() {
+          _isLoading = true;
+        });
         var result = await client
             .delete(id)
             .timeout(const Duration(milliseconds: 1000))
@@ -135,6 +142,9 @@ class _ViewScreenState extends State<ViewScreen> {
         });
 
         developer.log("After delete call, id: $id");
+        setState(() {
+          _isLoading = false;
+        });
 
         ReturnedFromPop returned;
         if (local) {
@@ -169,14 +179,14 @@ class _ViewScreenState extends State<ViewScreen> {
 
   _showErrorDialog(BuildContext context, String err) {
     Widget cancelButton = TextButton(
-      child: Text("Ok"),
+      child: const Text("Ok"),
       onPressed: () {
         Navigator.pop(context);
       },
     );
 
     AlertDialog alert = AlertDialog(
-      title: Text("Error"),
+      title: const Text("Error"),
       content: Text(err),
       actions: [
         cancelButton,
